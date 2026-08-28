@@ -14,7 +14,7 @@ export default function MainMenu() {
     const commentsAvailable = useStore((s) => s.commentsAvailable);
     const isLiked = useStore((s) => s.isLiked);
     return (
-        <div className="relative flex h-full flex-col items-center justify-center gap-8 px-10">
+        <div className="relative flex h-full flex-col items-center justify-center gap-4 px-10">
             <div
                 className="absolute right-5 top-5 flex items-center gap-2"
                 style={{ marginTop: 'var(--safe-top)' }}
@@ -40,11 +40,6 @@ export default function MainMenu() {
             >
                 TOWER DEFENSE
             </h1>
-            <p className="text-center text-xl text-white/70">
-                The enemies are coming.
-                <br />
-                Your defenders are ready.
-            </p>
             {bestWave > 0 && (
                 <div className="rounded-xl bg-white/5 px-6 py-3 text-[1.1rem] font-semibold text-white/80 tabular-nums">
                     Best: wave {bestWave}
