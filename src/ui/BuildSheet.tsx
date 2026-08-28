@@ -61,7 +61,7 @@ export default function BuildSheet() {
 
     const engine = getEngine();
     if (selectedPad === null || !engine) return null;
-    if (tdPhase === 'won' || tdPhase === 'lost') return null;
+    if (tdPhase === 'lost') return null;
 
     const tower = engine.state.towers.find((t) => t.padIndex === selectedPad);
     const refund = tower ? Math.floor(tower.spent * CONFIG.economy.sellRefund) : 0;

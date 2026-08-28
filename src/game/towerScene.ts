@@ -244,7 +244,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
             v.sprite.tint = tint;
             if (v.lastHp !== e.hp) {
                 v.lastHp = e.hp;
-                const frac = Math.max(0, e.hp / e.def.hp);
+                const frac = Math.max(0, e.hp / e.maxHp);
                 v.hpBar.clear();
                 if (frac < 1) {
                     v.hpBar.rect(-18, 0, 36, 6).fill(CONFIG.colors.hpBack);
@@ -373,9 +373,9 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
                 leaks++;
                 sfx.leak();
             } else if (e.type === 'wave-clear') {
-                sfx.waveClear();
-            } else if (e.type === 'won') {
-                sfx.win();
+                // clearing the last authored wave is the campaign milestone
+                if (e.cleared === WAVES.length) sfx.win();
+                else sfx.waveClear();
             } else if (e.type === 'lost') {
                 sfx.lose();
             }
@@ -387,7 +387,7 @@ export function createTowerScene(app: Application, stage: Stage): Scene {
     function checkEnd(): void {
         if (ended) return;
         const phase = engine.state.phase;
-        if (phase === 'won' || phase === 'lost') {
+        if (phase === 'lost') {
             ended = true;
             // waveIndex counts fully CLEARED waves at this point
             const { gemsEarned, save } = recordRunEnd(engine.state.waveIndex);

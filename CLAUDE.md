@@ -21,7 +21,7 @@ your game should not look like the example.
 - **src/game/config.ts** — THE TUNING HUB. Board (path waypoints, pads + gold-pad bonuses), economy (incl. `sellRefund`), display sizes (the zoom dial), colors, meta-upgrade curves, ads knobs. Its header maps the other three data files.
 - **src/game/data/towers.ts** — The tower catalog: cost/range/rate/damage, attack kind (`projectile` with splash/arc, or `beam` with chains), optional status inflict, default targeting, in-run upgrade steps, and the tower's signature `metaUnique` gem track.
 - **src/game/data/enemies.ts** — Enemy hp/speed/bounty/livesCost.
-- **src/game/data/waves.ts** — The invasion, wave by wave. No hidden scaling: what you read is what attacks.
+- **src/game/data/waves.ts** — The authored invasion, wave by wave (no hidden scaling), plus `waveAt()`: after the authored waves, ENDLESS waves are generated deterministically from the wave number (`ENDLESS` scaling knobs live beside it). There is no win state; runs end on a loss.
 - **src/game/data/status.ts** — The status-effect system's types and rules (slow, frozen, poison, burn, knockback) plus `makeEffect`. Open by design; see the recipe.
 - **src/game/data/targeting.ts** — The seven targeting modes: ids, button labels, help-popup descriptions.
 - **src/game/sim/engine.ts** — The pure engine: spawning, movement + statuses, targeting, beams/projectiles, crits (seeded PRNG), economy, events. No Pixi, no DOM, no SDK at runtime. `createEngine(metaLevels)`.
@@ -133,7 +133,7 @@ half-applied recipes fail) — and after gameplay recipes, `npm run balance`.
 ## Verification (after scaffolding a game from this template)
 
 - `npm install` clean; `npm run dev` boots (black cover → loading bar → menu, no console errors).
-- Defend → place a tower on a plain and a gold pad, upgrade, sell (confirm dialog), switch targeting, start waves at 1x and 4x; win or lose a run; gems pay out; Watch Ad grants the bonus in dev (fake ad); meta upgrade applies next run.
+- Defend → place a tower on a plain and a gold pad, upgrade, sell (confirm dialog), switch targeting, start waves at 1x and 4x; clear the authored waves (fanfare, HUD flips to "Endless") and lose eventually; gems pay out; Watch Ad grants the bonus in dev (fake ad); meta upgrade applies next run.
 - Ranks shows the loading → empty states in dev (the SDK self-mocks; real boards exist only in the host after deploy).
 - Settings sliders change volumes and persist across reload.
 - Portrait sizes in the device toolbar: board centers on tall screens, path exits into the burrows.

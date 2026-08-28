@@ -11,7 +11,7 @@ What is wired and working:
 
 - A **pure simulation engine** (no rendering, deterministic) driven entirely by data files, with the Pixi scene as a view over it
 - A **headless balance verifier**: `npm run balance` plays your tuning with three strategies and reports per-wave lives in seconds
-- Four example towers covering the mechanic space (rapid shot, slowing shot, splash with a lobbed arc, chaining lightning beam), five example enemies, ten example waves — all replace-or-delete example content
+- Four example towers covering the mechanic space (rapid shot, slowing shot, splash with a lobbed arc, chaining lightning beam), five example enemies, ten authored waves and then **endless** generated waves (survive as long as you can) — all replace-or-delete example content
 - A **status-effect system** (slow, frozen, poison, burn, knockback) designed for adding more
 - Seven **targeting modes** per placed tower, with a player-facing help popup
 - Tap-to-build pads (including gold **bonus pads**), in-run upgrades, selling with a confirmation, 1x to 4x game speed

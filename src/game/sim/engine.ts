@@ -14,12 +14,13 @@ import { enemyDef, type EnemyDef } from '../data/enemies.ts';
 import { KNOCKBACK_TIME, makeEffect, type StatusEffect } from '../data/status.ts';
 import type { TargetingMode } from '../data/targeting.ts';
 import { towerDef, type TowerDef } from '../data/towers.ts';
-import { ENTRY_GAP, WAVES } from '../data/waves.ts';
+import { ENTRY_GAP, waveAt } from '../data/waves.ts';
 // type-only: the engine stays free of the save/SDK at runtime, so the
 // headless balance sim can bundle it for node
 import type { MetaLevels } from '../../state/save.ts';
 
-export type TdPhase = 'build' | 'wave' | 'won' | 'lost';
+/** No 'won': after the authored waves, endless waves continue until a loss. */
+export type TdPhase = 'build' | 'wave' | 'lost';
 
 /** Discrete things that just happened, for the view to render/sound. */
 export type EngineEvent =
@@ -27,8 +28,7 @@ export type EngineEvent =
     | { type: 'beam'; towerId: string; points: { x: number; y: number }[] }
     | { type: 'death' }
     | { type: 'leak' }
-    | { type: 'wave-clear' }
-    | { type: 'won' }
+    | { type: 'wave-clear'; cleared: number }
     | { type: 'lost' };
 
 export interface EnemyInst {
@@ -37,6 +37,9 @@ export interface EnemyInst {
     /** Distance travelled along the path polyline. */
     dist: number;
     hp: number;
+    /** This instance's max hp and walk speed (endless waves scale both). */
+    maxHp: number;
+    speed: number;
     /** Active status effects (see data/status.ts for the rules). */
     effects: StatusEffect[];
     /** Cached world position for this step (targeting, splash, rendering). */
@@ -229,14 +232,16 @@ export function createEngine(meta: MetaLevels = {}): Engine {
         t.knockbackBonus = u.kind === 'knockback' ? uniqueLevel * u.perLevel : 0;
     }
 
-    function spawnEnemy(id: string): void {
+    function spawnEnemy(id: string, hpMult: number, speedMult: number): void {
         const def = enemyDef(id);
         const pos = posAt(0);
         state.enemies.push({
             uid: nextUid++,
             def,
             dist: 0,
-            hp: def.hp,
+            hp: def.hp * hpMult,
+            maxHp: def.hp * hpMult,
+            speed: def.speed * speedMult,
             effects: [],
             x: pos.x,
             y: pos.y,
@@ -244,12 +249,12 @@ export function createEngine(meta: MetaLevels = {}): Engine {
     }
 
     function stepSpawning(dt: number): void {
-        const wave = WAVES[state.waveIndex];
+        const wave = waveAt(state.waveIndex);
         if (entryIndex >= wave.entries.length) return;
         spawnTimer -= dt;
         if (spawnTimer > 0) return;
         const entry = wave.entries[entryIndex];
-        spawnEnemy(entry.enemy);
+        spawnEnemy(entry.enemy, wave.hpMult ?? 1, wave.speedMult ?? 1);
         spawnedInEntry++;
         if (spawnedInEntry >= entry.count) {
             entryIndex++;
@@ -418,7 +423,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             if (shove && shove.type === 'knockback') {
                 e.dist = Math.max(0, e.dist - shove.speed * dt);
             } else {
-                e.dist += e.def.speed * speedFactor(e) * dt;
+                e.dist += e.speed * speedFactor(e) * dt;
             }
             if (e.dist >= PATH_LENGTH) {
                 state.enemies.splice(i, 1);
@@ -511,27 +516,23 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             }
         }
 
-        // wave over?
-        const wave = WAVES[state.waveIndex];
+        // wave over? There is no win: after the authored waves, endless
+        // generated waves keep coming (data/waves.ts waveAt).
+        const wave = waveAt(state.waveIndex);
         const doneSpawning = entryIndex >= wave.entries.length;
         if (doneSpawning && state.enemies.length === 0) {
             state.projectiles.length = 0;
             state.coins += CONFIG.economy.waveBonus;
             state.waveIndex++;
-            if (state.waveIndex >= WAVES.length) {
-                state.phase = 'won';
-                events.push({ type: 'won' });
-            } else {
-                state.phase = 'build';
-                events.push({ type: 'wave-clear' });
-            }
+            state.phase = 'build';
+            events.push({ type: 'wave-clear', cleared: state.waveIndex });
         }
     }
 
     return {
         state,
         placeTower(padIndex, towerId) {
-            if (state.phase === 'won' || state.phase === 'lost') return false;
+            if (state.phase === 'lost') return false;
             if (state.towers.some((t) => t.padIndex === padIndex)) return false;
             const def = towerDef(towerId);
             if (state.coins < def.cost) return false;
@@ -561,7 +562,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             return true;
         },
         upgradeTower(padIndex) {
-            if (state.phase === 'won' || state.phase === 'lost') return false;
+            if (state.phase === 'lost') return false;
             const t = state.towers.find((tw) => tw.padIndex === padIndex);
             if (!t) return false;
             if (t.level > t.def.upgrades.length) return false;
@@ -574,7 +575,7 @@ export function createEngine(meta: MetaLevels = {}): Engine {
             return true;
         },
         sellTower(padIndex) {
-            if (state.phase === 'won' || state.phase === 'lost') return false;
+            if (state.phase === 'lost') return false;
             const idx = state.towers.findIndex((tw) => tw.padIndex === padIndex);
             if (idx < 0) return false;
             state.coins += Math.floor(state.towers[idx].spent * CONFIG.economy.sellRefund);

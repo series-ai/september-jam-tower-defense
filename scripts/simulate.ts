@@ -17,6 +17,8 @@ import { WAVES } from '../src/game/data/waves.ts';
 import { createEngine, type Engine } from '../src/game/sim/engine.ts';
 
 const DT = 1 / 30;
+/** Endless never ends: stop the sim this many waves past the authored set. */
+const MAX_WAVES = WAVES.length + 15;
 /** Safety valve: no wave should take longer than this to resolve. */
 const MAX_WAVE_SECONDS = 300;
 
@@ -100,7 +102,7 @@ const STRATEGIES: Strategy[] = [
 function run(strategy: Strategy): void {
     const e = createEngine();
     const rows: string[] = [];
-    while (e.state.phase === 'build') {
+    while (e.state.phase === 'build' && e.state.waveIndex < MAX_WAVES) {
         strategy.buy(e);
         const waveNo = e.state.waveIndex + 1;
         const livesBefore = e.state.lives;
@@ -127,9 +129,9 @@ function run(strategy: Strategy): void {
         if (e.state.phase === 'lost') break;
     }
     const outcome =
-        e.state.phase === 'won'
-            ? `WON with ${e.state.lives}/${CONFIG.economy.startLives} lives`
-            : `LOST on wave ${e.state.waveIndex + 1}`;
+        e.state.phase === 'lost'
+            ? `LOST on wave ${e.state.waveIndex + 1}`
+            : `SURVIVED to the sim cap (wave ${MAX_WAVES}) with ${e.state.lives}/${CONFIG.economy.startLives} lives`;
     console.log(`\n${strategy.name}: ${outcome}`);
     for (const r of rows) console.log(r);
 }
@@ -138,6 +140,6 @@ console.log(`Balance simulation — ${WAVES.length} waves, dt=${DT.toFixed(3)}s`
 for (const s of STRATEGIES) run(s);
 
 console.log('\nReading the results:');
-console.log('  - balanced and fox-spam should WIN (fox-spam maybe barely).');
+console.log(`  - balanced and fox-spam should clear all ${WAVES.length} authored waves, then die somewhere in endless.`);
 console.log('  - miser must LOSE, ideally around waves 4-6.');
-console.log('  - If those hold, the tuning is in the playable band.');
+console.log('  - Endless is meant to kill everyone eventually; if a strategy survives to the cap, scaling is too soft.');

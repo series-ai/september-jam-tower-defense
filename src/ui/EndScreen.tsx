@@ -1,14 +1,15 @@
 /**
- * Run-over overlay: victory or defeat, waves cleared, kills, gem payout,
- * and the rewarded-ad gem bonus (watch an ad, get +50% of this run's gems,
- * once per run — the flow runs through the ads system's grantReward
- * chokepoint, so the daily cap, subscriber skip, and no-ads fallback all
- * apply). Retry bumps runId, remounting GameCanvas into a fresh engine.
+ * Run-over overlay. There is no win: after the authored waves, endless waves
+ * keep coming, so every run ends here on a loss. Shows waves survived,
+ * kills, the gem payout, and the rewarded-ad gem bonus (watch an ad, get
+ * +50% of this run's gems, once per run — through the ads system's
+ * grantReward chokepoint, so the daily cap, subscriber skip, and no-ads
+ * fallback all apply). Retry bumps runId, remounting GameCanvas into a
+ * fresh engine.
  *
- * TODO: surface the Like/Comments prompts (src/sdk/engagement.ts) here on
- * the victory path — the SDK recommends asking after a win, and a player
- * who just cleared wave 10 is the right audience. They currently live on
- * the main menu only.
+ * TODO: surface the Like/Comments prompts (src/sdk/engagement.ts) here
+ * after a strong run — the SDK recommends asking after a satisfying beat.
+ * They currently live on the main menu only.
  */
 import { useEffect, useState } from 'react';
 import { sfx } from '../audio/audio.ts';
@@ -34,9 +35,9 @@ export default function EndScreen() {
         setBusy(false);
     }, [tdPhase]);
 
-    if (tdPhase !== 'won' && tdPhase !== 'lost') return null;
-    const won = tdPhase === 'won';
-    const cleared = won ? waveCount : wave - 1;
+    if (tdPhase !== 'lost') return null;
+    const survived = wave - 1; // waves fully cleared before the fall
+    const beatCampaign = survived >= waveCount;
     const bonus = Math.ceil(gemsEarned * CONFIG.ads.gemBonusFactor);
     const ads = adsSystem();
     const offerBonus = bonus > 0 && !adBonusClaimed && !ads.capReached();
@@ -67,12 +68,15 @@ export default function EndScreen() {
 
     return (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/75 px-10">
-            <h2 className={'text-4xl font-bold ' + (won ? 'text-primary' : 'text-red-400')}>
-                {won ? 'Victory!' : 'Overrun!'}
+            <h2 className={'text-4xl font-bold ' + (beatCampaign ? 'text-primary' : 'text-red-400')}>
+                Overrun!
             </h2>
-            <p className="text-xl text-white/80 tabular-nums">
-                Waves cleared: {cleared}/{waveCount}
-            </p>
+            <p className="text-xl text-white/80 tabular-nums">Waves survived: {survived}</p>
+            {beatCampaign && (
+                <p className="text-[1.1rem] font-semibold text-primary tabular-nums">
+                    Campaign cleared! Endless wave {survived - waveCount + 1} got you.
+                </p>
+            )}
             {runKills > 0 && (
                 <p className="text-[1.1rem] text-white/60 tabular-nums">Enemies defeated: {runKills}</p>
             )}
@@ -105,7 +109,7 @@ export default function EndScreen() {
                     store.patch({ tdPhase: 'build', selectedPad: null, runId: store.get().runId + 1 })
                 }
             >
-                {won ? 'Play Again' : 'Retry'}
+                Retry
             </button>
             <button
                 type="button"

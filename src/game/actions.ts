@@ -5,7 +5,6 @@
  */
 import { store } from '../state/store.ts';
 import type { TargetingMode } from './data/targeting.ts';
-import { WAVES } from './data/waves.ts';
 import type { Engine } from './sim/engine.ts';
 
 /**
@@ -31,7 +30,7 @@ export function syncStore(): void {
     if (!engine) return;
     const s = engine.state;
     const cur = store.get();
-    const wave = Math.min(s.waveIndex + 1, WAVES.length);
+    const wave = s.waveIndex + 1; // unbounded: endless after the authored waves
     if (
         cur.coins !== s.coins ||
         cur.lives !== s.lives ||

@@ -37,7 +37,7 @@ export default function Hud() {
                     reachable while the tower details sheet is open */}
                 <div className="flex items-center justify-between">
                     <div className="rounded-xl bg-black/50 px-4 py-2 text-[1.1rem] font-semibold tabular-nums">
-                        Wave {wave}/{waveCount}
+                        {wave > waveCount ? `Wave ${wave} · Endless` : `Wave ${wave}/${waveCount}`}
                     </div>
                     {tdPhase === 'build' && (
                         <button
