@@ -36,6 +36,7 @@ your game should not look like the example.
 - **src/ui/** — App (router + overlays), MainMenu, Hud, BuildSheet (build/upgrade/sell/targeting panel), EndScreen (summary + ad bonus), MetaUpgrades, Leaderboard, Settings, GemCounter, LoadingScreen.
 - **scripts/simulate.ts** — `npm run balance`: three deterministic strategies vs your tuning, per-wave lives report.
 - **rundot/leaderboard.config.json** — Board definitions; auto-created on `rundot deploy`.
+- **game.config.prod.json** — Ships pre-baked with `kitId: "september-jam-tower-defense"` so `rundot init` can attribute the game to this kit and auto-enter it in the jam; do not remove or blank out `kitId`. `rundot init` fills in the rest (`gameId`, `keywords`) in place.
 
 ## Invariants (break these and things get weird)
 
@@ -138,7 +139,7 @@ half-applied recipes fail) — and after gameplay recipes, `npm run balance`.
 - Settings sliders change volumes and persist across reload.
 - Portrait sizes in the device toolbar: board centers on tall screens, path exits into the burrows.
 - `npm run balance` prints the three-strategy report and the playable band holds.
-- `npm run build` passes; before first deploy: real 512x512 `public/thumbnail.jpg` + `rundot init` (once).
+- `npm run build` passes; before first deploy: real 512x512 `public/thumbnail.jpg` + `rundot init` (once). After init, `game.config.prod.json` still carries `kitId: "september-jam-tower-defense"` (jam attribution).
 
 ## Dev-mode honesty
 

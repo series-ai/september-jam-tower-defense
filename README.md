@@ -45,7 +45,7 @@ npm run build
 rundot deploy
 ```
 
-`rundot init` runs ONCE per game; after that, iterating is `npm run build && rundot deploy`. The two leaderboards are created automatically on first deploy from `rundot/leaderboard.config.json`. Deploys are **private by default** (`--public` to list on Explore). Replace `public/thumbnail.jpg` first: exactly 512x512 JPG (`rundot deploy` rejects placeholders).
+`rundot init` runs ONCE per game; after that, iterating is `npm run build && rundot deploy`. The repo ships a `game.config.prod.json` with the kit's `kitId` baked in — `rundot init` keeps it and fills in your game's details, and that `kitId` is what enters your game in the jam, so don't delete it. The two leaderboards are created automatically on first deploy from `rundot/leaderboard.config.json`. Deploys are **private by default** (`--public` to list on Explore). Replace `public/thumbnail.jpg` first: exactly 512x512 JPG (`rundot deploy` rejects placeholders).
 
 ## Where Things Live
 
