@@ -20,6 +20,8 @@ What is wired and working:
 
 ## Quick Start
 
+Requires **Node.js 20.19+ or 22.12+** (Vite 8 does not run on older versions, including Node 18). Check with `node -v`.
+
 ```bash
 npm install
 npm run dev            # http://localhost:5173
