@@ -30,7 +30,7 @@ your game should not look like the example.
 - **src/game/towerIcons.ts** — Renders tower textures to data URLs at boot for the DOM UI.
 - **src/game/textures.ts** — Every texture via `art(alias, fallback)`: manifest-listed real art wins, else the procedural placeholder draws. `freeTexture()` on teardown never destroys real art.
 - **src/audio/audio.ts** — Two WebAudio buses, synth SFX + sequenced music loop, volumes persisted. Header documents the real-file swap.
-- **src/state/store.ts** / **src/state/save.ts** — UI-facing state bridge; per-player save (cloud + localStorage write-through) with meta levels, gems, audio volumes, and the ads cap slice.
+- **src/state/store.ts** / **src/state/save.ts** — UI-facing state bridge; per-player save (cloud + deviceCache write-through) with meta levels, gems, audio volumes, and the ads cap slice.
 - **src/sdk/** — `runSdk.ts` (init + lifecycles), `leaderboard.ts` (two boards as modes), `ads.ts` (this game's rewarded-ads instance), `engagement.ts` (Like/Comments prompts).
 - **src/systems/ads.ts**, **src/shared/serverTime.ts** — Copied in from `@series-inc/run-game-helpers` (copy files in; never import that package at runtime).
 - **src/ui/** — App (router + overlays), MainMenu, Hud, BuildSheet (build/upgrade/sell/targeting panel), EndScreen (summary + ad bonus), MetaUpgrades, Leaderboard, Settings, GemCounter, LoadingScreen.

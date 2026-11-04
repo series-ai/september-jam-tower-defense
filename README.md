@@ -59,7 +59,7 @@ src/game/sim/engine.ts       // the pure simulation engine
 src/game/towerScene.ts       // the Pixi view over the engine
 src/game/textures.ts         // art(alias, fallback): real art wins, placeholder draws
 src/audio/audio.ts           // music + SFX on two buses; real-file swap documented
-src/state/                   // store (UI state) + save (cloud + localStorage)
+src/state/                   // store (UI state) + save (cloud + deviceCache)
 src/sdk/                     // SDK init, leaderboards, rewarded ads, engagement
 src/systems/, src/shared/    // copy-in platform modules (ads core, trusted clock)
 src/ui/                      // menu, HUD, build sheet, end screen, shops, settings

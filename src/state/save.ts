@@ -1,7 +1,7 @@
 /**
  * Persistence: the per-player save, written to RUN's appStorage when the
- * host is present and mirrored to localStorage always (so plain-browser dev
- * keeps progress too, and reads never wait on the host).
+ * host is present and mirrored to the device cache always (so plain-browser dev
+ * keeps progress too).
  *
  * Posture: loads happen once at boot (main.tsx step 2) into memory; writes
  * are write-through and fire-and-forget. Nothing here ever throws.
@@ -15,7 +15,7 @@ import type { AdsState } from '../systems/ads.ts';
 // Bump the suffix if the shape ever changes incompatibly (new optional
 // fields with defaults do NOT need a bump; parse() fills them in).
 // ADAPT: your game's save key — two games scaffolded from this template
-// must not share one, or their localStorage saves collide in dev.
+// must not share one, or their device-cache saves collide in dev.
 const SAVE_KEY = 'td-template:save:v1';
 
 export type MetaStat = 'damage' | 'speed' | 'range' | 'unique';
@@ -112,11 +112,11 @@ export async function loadSave(): Promise<SaveData> {
         try {
             loaded = parse(await RundotGameAPI.appStorage.getItem(SAVE_KEY));
         } catch {
-            /* host storage unavailable — fall through to localStorage */
+            /* host storage unavailable — fall through to the device cache */
         }
     }
     if (!loaded) {
-        try { loaded = parse(localStorage.getItem(SAVE_KEY)); } catch { /* blocked storage */ }
+        try { loaded = parse(await RundotGameAPI.deviceCache.getItem(SAVE_KEY)); } catch { /* no device cache */ }
     }
     data = loaded ?? structuredClone(DEFAULTS);
     return data;
@@ -129,7 +129,9 @@ export function getSave(): SaveData {
 /** Write-through persist of the in-memory save. Fire-and-forget, never throws. */
 export function flushSave(): void {
     const raw = JSON.stringify(data);
-    try { localStorage.setItem(SAVE_KEY, raw); } catch { /* blocked storage */ }
+    try {
+        RundotGameAPI.deviceCache.setItem(SAVE_KEY, raw).catch(() => { /* non-fatal */ });
+    } catch { /* non-fatal */ }
     if (sdkReady()) {
         try {
             RundotGameAPI.appStorage.setItem(SAVE_KEY, raw).catch(() => { /* offline */ });
